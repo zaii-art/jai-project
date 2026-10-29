@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Campus Access Control</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%90%3C/text%3E%3C/svg%3E">
+<!-- ===================== CSS: colors and layout ===================== -->
+<style>
+    :root {
+      box-sizing:border-box;
+      padding-top:env(safe-area-inset-top,0px);
+      padding-bottom:env(safe-area-inset-bottom,0px);
+      --bg:#eff4f2;
+      --card:#ffffff;
+      --side:#0f2d30;
+      --sideink:#a9c8c6;
+      --ink:#12262a;
+      --mute:#5b7174;
+      --line:#d9e5e3;
+      --acc:#0e6b63;
+      --acc2:#d9efec;
+      --onacc:#ffffff;
+      --ok:#17743c;
+      --okbg:#e0f3e7;
+      --onok:#fff;
+      --no:#b8352b;
+      --nobg:#fbe9e6;
+      --gold:#d9a02e;
+      --sh:0 1px 2px rgba(15,45,48,.06);
+      --sb:#e3ecff;
+      --sc:#2f55d4;
+      --fb:#efe6ff;
+      --fc:#6a3fc0;
+      --tb:#fff0d6;
+      --tc:#9a5a00;
+      --vb:#e9ecf1;
+      --vc:#566275;
+    }
+
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        --bg:#0a1517;
+        --card:#102123;
+        --side:#081113;
+        --sideink:#8fb0ae;
+        --ink:#e6f1ef;
+        --mute:#8ba5a3;
+        --line:#1f3a3c;
+        --acc:#4fd1c0;
+        --acc2:#14403f;
+        --onacc:#06201d;
+        --ok:#5fd68c;
+        --okbg:#10321f;
+        --onok:#06210f;
+        --no:#ff8f84;
+        --nobg:#3a1a17;
+        --gold:#e8b64a;
+        --sh:none;
+        --sb:#1c2a5c;
+        --sc:#8fa8ff;
+        --fb:#2c1f55;
+        --fc:#c3a6ff;
+        --tb:#4a3510;
+        --tc:#ffc66b;
+        --vb:#272c3a;
+        --vc:#aab3c5;
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg:#0a1517;
+      --card:#102123;
+      --side:#081113;
+      --sideink:#8fb0ae;
+      --ink:#e6f1ef;
+      --mute:#8ba5a3;
+      --line:#1f3a3c;
+      --acc:#4fd1c0;
+      --acc2:#14403f;
+      --onacc:#06201d;
+      --ok:#5fd68c;
+      --okbg:#10321f;
+      --onok:#06210f;
+      --no:#ff8f84;
+      --nobg:#3a1a17;
+      --gold:#e8b64a;
+      --sh:none;
+      --sb:#1c2a5c;
+      --sc:#8fa8ff;
+      --fb:#2c1f55;
+      --fc:#c3a6ff;
+      --tb:#4a3510;
+      --tc:#ffc66b;
+      --vb:#272c3a;
+      --vc:#aab3c5;
+    }
+
+    * {
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    button,select {
+      touch-action:manipulation;
+    }
+
+    [hidden] {
+      display:none!important;
+    }
+
+    html,body {
+      height:100%;
+    }
+
+    body {
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font:15px/1.5 "Trebuchet MS",Verdana,sans-serif;
+    }
+
+    h1,h2,h3 {
+      font-family:Georgia,serif;
+      margin:0;
+    }
+
+    #login {
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:radial-gradient(circle at 20% 10%,var(--acc2),transparent 55%),var(--bg);
+    }
+
+    #login .card {
+      width:100%;
+      max-width:370px;
+      padding:28px 24px;
+      text-align:center;
+    }
+
+    #login .lock {
+      width:64px;
+      height:64px;
+      margin:0 auto 12px;
+      border-radius:18px;
+      background:var(--side);
+      display:grid;
+      place-items:center;
+      font-size:30px;
+    }
+
+    #login h1 {
+      font-size:24px;
+      margin-bottom:2px;
+    }
+
+    #login label {
+      text-align:left;
+    }
+
+    .app {
+      display:grid;
+      grid-template-columns:96px 1fr;
+      min-height:100%;
+    }
+
+    aside {
+      background:var(--side);
+      color:var(--sideink);
+      padding:12px 8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      position:sticky;
+      top:env(safe-area-inset-top,0px);
+      height:100vh;
+      height:100dvh;
+      overflow-y:auto;
+      align-self:start;
+    }
+
+    aside .brand {
+      font:700 13px Georgia,serif;
+      text-align:center;
+      padding:4px 0 10px;
+      line-height:1.2;
+      color:#fff;
+    }
+
+    aside button {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:2px;
+      background:none;
+      border:0;
+      color:inherit;
+      padding:9px 4px;
+      border-radius:12px;
+      font:inherit;
+      font-size:12px;
+      line-height:1.2;
+      cursor:pointer;
+      text-align:center;
+    }
+
+    aside button span {
+      font-size:20px;
+    }
+
+    aside button:hover {
+      background:#ffffff14;
+    }
+
+    aside button[aria-current="true"] {
+      background:var(--acc);
+      color:var(--onacc);
+      font-weight:700;
+    }
+
+    .pane {
+      padding:18px 16px 40px;
+      min-width:0;
+      max-width:700px;
+      width:100%;
+    }
+
+    .top {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:14px;
+      gap:8px;
+    }
+
+    .top h2 {
+      font-size:22px;
+    }
+
+    .top small {
+      color:var(--mute);
+    }
+
+    .top button {
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--ink);
+      border-radius:999px;
+      padding:7px 14px;
+      font:inherit;
+      font-size:13px;
+      cursor:pointer;
+      box-shadow:var(--sh);
+    }
+
+    section {
+      display:none;
+    }
+
+    section.on {
+      display:block;
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:16px;
+      margin-bottom:14px;
+      box-shadow:var(--sh);
+    }
+
+    h3 {
+      font-size:16px;
+      margin-bottom:10px;
+    }
+
+    label {
+      display:block;
+      font-size:13px;
+      color:var(--mute);
+      margin:12px 0 5px;
+    }
+
+    input,select,textarea {
+      width:100%;
+      padding:11px 12px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:var(--bg);
+      color:var(--ink);
+      font:inherit;
+    }
+
+    input:focus,select:focus,textarea:focus {
+      border-color:var(--acc);
+    }
+
+    textarea {
+      min-height:130px;
+      font:12px/1.4 monospace;
+    }
+
+    input[type=checkbox] {
+      width:18px;
+      height:18px;
+      accent-color:var(--acc);
+    }
+
+    button.go {
+      margin-top:14px;
+      width:100%;
+      padding:13px;
+      border:0;
+      border-radius:12px;
+      background:var(--acc);
+      color:var(--onacc);
+      font:700 15px "Trebuchet MS",Verdana,sans-serif;
+      cursor:pointer;
+    }
+
+    button.go:active {
+      transform:scale(.98);
+    }
+
+    button.go.alt {
+      background:none;
+      color:var(--ink);
+      border:1px solid var(--line);
+      margin-top:8px;
+    }
+
+    button.sm {
+      border:1px solid var(--line);
+      background:none;
+      color:var(--no);
+      border-radius:8px;
+      padding:4px 10px;
+      cursor:pointer;
+      font:inherit;
+      font-size:13px;
+    }
+
+    button.sm.ed {
+      color:var(--acc);
+    }
+
+    button.cell {
+      width:38px;
+      height:32px;
+      border-radius:8px;
+      border:0;
+      background:var(--line);
+      color:var(--mute);
+      font:700 14px inherit;
+      font-family:inherit;
+      cursor:pointer;
+    }
+
+    button.cell.on {
+      background:var(--ok);
+      color:var(--onok);
+    }
+
+    button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible {
+      outline:2px solid var(--acc);
+      outline-offset:2px;
+    }
+
+    .res {
+      margin-top:14px;
+      padding:16px;
+      border-radius:14px;
+      font-weight:700;
+      font-size:19px;
+      text-align:center;
+    }
+
+    .res.ok {
+      background:var(--okbg);
+      color:var(--ok);
+    }
+
+    .res.no {
+      background:var(--nobg);
+      color:var(--no);
+    }
+
+    .steps {
+      margin:12px 0 0;
+      padding:0;
+      list-style:none;
+      border-left:3px solid var(--line);
+    }
+
+    .steps li {
+      padding:7px 0 7px 14px;
+    }
+
+    .steps li b {
+      display:block;
+      font-size:13px;
+      color:var(--mute);
+      font-weight:400;
+    }
+
+    .steps li.p {
+      border-left:3px solid var(--ok);
+      margin-left:-3px;
+    }
+
+    .steps li.f {
+      border-left:3px solid var(--no);
+      margin-left:-3px;
+    }
+
+    .chips {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-top:10px;
+    }
+
+    .chip {
+      padding:3px 11px;
+      border-radius:999px;
+      font-size:12px;
+      background:var(--acc2);
+      color:var(--acc);
+    }
+
+    .stats {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .stat {
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      text-align:center;
+      box-shadow:var(--sh);
+    }
+
+    .stat b {
+      display:block;
+      font:700 24px Georgia,serif;
+    }
+
+    .stat span {
+      font-size:12px;
+      color:var(--mute);
+    }
+
+    table {
+      border-collapse:collapse;
+      width:100%;
+      font-size:14px;
+    }
+
+    th,td {
+      border-bottom:1px solid var(--line);
+      padding:8px 6px;
+      text-align:center;
+    }
+
+    th:first-child,td:first-child {
+      text-align:left;
+    }
+
+    th {
+      font-size:12px;
+      color:var(--mute);
+      font-weight:600;
+    }
+
+    .wrap {
+      overflow-x:auto;
+    }
+
+    .y {
+      color:var(--ok);
+      font-weight:700;
+    }
+
+    .n {
+      color:var(--no);
+    }
+
+    .row {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:10px 0;
+      border-bottom:1px solid var(--line);
+    }
+
+    .row:last-child {
+      border-bottom:0;
+    }
+
+    .row .l {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .av {
+      flex:none;
+      width:38px;
+      height:38px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      font-weight:700;
+      font-size:14px;
+      background:var(--acc2);
+      color:var(--acc);
+    }
+
+    .av.Student {
+      background:var(--sb);
+      color:var(--sc);
+    }
+
+    .av.Faculty {
+      background:var(--fb);
+      color:var(--fc);
+    }
+
+    .av.Staff {
+      background:var(--tb);
+      color:var(--tc);
+    }
+
+    .av.Visitor {
+      background:var(--vb);
+      color:var(--vc);
+    }
+
+    .row .b {
+      display:flex;
+      gap:6px;
+      flex:none;
+    }
+
+    .row small,.note {
+      color:var(--mute);
+      font-size:13px;
+    }
+
+    .badge {
+      display:inline-block;
+      font-size:11px;
+      padding:0 7px;
+      border-radius:999px;
+      margin-left:4px;
+    }
+
+    .badge.a {
+      background:var(--okbg);
+      color:var(--ok);
+    }
+
+    .badge.r {
+      background:var(--nobg);
+      color:var(--no);
+    }
+
+    .two {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    code {
+      background:var(--bg);
+      padding:1px 6px;
+      border-radius:5px;
+    }
+
+    .sw {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .err {
+      color:var(--no);
+      font-size:13px;
+      min-height:18px;
+      margin-top:8px;
+      text-align:left;
+    }
+
+    aside .out {
+      margin-top:10px;
+      padding-top:14px;
+      border-top:1px solid #ffffff1f;
+      border-radius:0;
+    }
+
+    aside button[aria-current="true"] {
+      box-shadow:inset 3px 0 0 var(--gold);
+    }
+
+    .set {
+      --c:var(--sc);
+      --b:var(--sb);
+    }
+
+    .set.Faculty {
+      --c:var(--fc);
+      --b:var(--fb);
+    }
+
+    .set.Staff {
+      --c:var(--tc);
+      --b:var(--tb);
+    }
+
+    .set.Visitor {
+      --c:var(--vc);
+      --b:var(--vb);
+    }
+
+    .set.A {
+      --c:var(--ok);
+      --b:var(--okbg);
+    }
+
+    .set.R {
+      --c:var(--no);
+      --b:var(--nobg);
+    }
+
+    .set {
+      border-top:4px solid var(--c);
+    }
+
+    .sh {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:10px;
+    }
+
+    .sl {
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      background:var(--b);
+      color:var(--c);
+      display:grid;
+      place-items:center;
+      font:700 20px Georgia,serif;
+    }
+
+    .sh h3 {
+      margin:0;
+    }
+
+    .sh small {
+      color:var(--mute);
+      font-size:12px;
+    }
+
+    .sh .cnt {
+      margin-left:auto;
+      font:700 13px Georgia,serif;
+      background:var(--b);
+      color:var(--c);
+      padding:4px 10px;
+      border-radius:999px;
+    }
+
+    .mems {
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+
+    .mem {
+      background:var(--b);
+      color:var(--c);
+      padding:4px 12px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .empty {
+      color:var(--mute);
+      font-size:20px;
+    }
+
+    .pill {
+      font-size:12px;
+      font-weight:700;
+      padding:3px 12px;
+      border-radius:999px;
+    }
+
+    .pill.y {
+      background:var(--okbg);
+      color:var(--ok);
+    }
+
+    .pill.n {
+      background:var(--nobg);
+      color:var(--no);
+    }
+
+    body[data-role="user"] .adm {
+      display:none;
+    }
+
+    span.cell {
+      display:inline-grid;
+      place-items:center;
+      width:38px;
+      height:32px;
+      border-radius:8px;
+      background:var(--line);
+      color:var(--mute);
+      font-weight:700;
+    }
+
+    span.cell.on {
+      background:var(--ok);
+      color:var(--onok);
+    }
+
+    .prof {
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .av.big {
+      width:60px;
+      height:60px;
+      font-size:20px;
+    }
+
+    .facs {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .fac {
+      border-radius:12px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      border:1px solid var(--line);
+    }
+
+    .fac span {
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .fac.ok {
+      background:var(--okbg);
+      color:var(--ok);
+    }
+
+    .fac.no {
+      background:var(--nobg);
+      color:var(--no);
+    }
+
+    #toast {
+      position:fixed;
+      left:50%;
+      bottom:calc(20px + env(safe-area-inset-bottom,0px));
+      transform:translate(-50%,30px);
+      background:var(--side);
+      color:#fff;
+      padding:10px 18px;
+      border-radius:999px;
+      font-size:14px;
+      opacity:0;
+      pointer-events:none;
+      transition:.25s;
+      z-index:9;
+    }
+
+    #toast.on {
+      opacity:1;
+      transform:translate(-50%,0);
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      #toast,button.go {
+        transition:none;
+      }
+    }
+
+
+    /* ===================== DESKTOP: bigger text and a wider layout =====================
+       Phones keep the same look as before. This only applies on screens 1000px wide or more. */
+    @media (min-width: 1000px) {
+      body { font-size: 17px; line-height: 1.55; }
+
+      /* login page */
+      #login .card { max-width: 470px; padding: 42px 38px; }
+      #login .lock { width: 84px; height: 84px; font-size: 40px; border-radius: 24px; }
+      #login h1 { font-size: 32px; }
+      .err { font-size: 15px; }
+
+      /* menu on the left */
+      .app { grid-template-columns: 230px 1fr; }
+      aside { padding: 22px 14px; gap: 8px; }
+      aside .brand { font-size: 21px; text-align: left; padding: 6px 12px 20px; }
+      aside button { flex-direction: row; justify-content: flex-start; gap: 14px; padding: 14px 16px; font-size: 16px; text-align: left; border-radius: 14px; }
+      aside button span { font-size: 24px; width: 30px; text-align: center; }
+
+      /* page on the right */
+      .pane { max-width: 1240px; margin: 0 auto; padding: 36px 52px 70px; }
+      .top { margin-bottom: 26px; }
+      .top h2 { font-size: 34px; }
+      .top small { font-size: 15px; }
+
+      /* cards, text, forms */
+      .card { padding: 28px; border-radius: 20px; margin-bottom: 24px; }
+      h3 { font-size: 22px; margin-bottom: 14px; }
+      label { font-size: 15px; margin: 16px 0 6px; }
+      input, select, textarea { padding: 14px 16px; font-size: 16px; border-radius: 12px; }
+      input[type=checkbox] { width: 22px; height: 22px; }
+      textarea { min-height: 220px; font-size: 14px; }
+      button.go { padding: 16px; font-size: 17px; border-radius: 14px; }
+      button.sm { font-size: 15px; padding: 7px 16px; }
+      .note, .row small { font-size: 15px; }
+      .sw { gap: 12px; margin-top: 16px; }
+
+      /* results */
+      .res { padding: 22px; font-size: 24px; border-radius: 16px; }
+      .steps li { padding: 10px 0 10px 18px; }
+      .steps li b { font-size: 15px; }
+
+      /* numbers, tables, matrix */
+      .stats { gap: 18px; margin-bottom: 24px; }
+      .stat { padding: 22px; border-radius: 16px; }
+      .stat b { font-size: 36px; }
+      .stat span { font-size: 15px; }
+      table { font-size: 16px; }
+      th { font-size: 14px; }
+      th, td { padding: 13px 10px; }
+      button.cell, span.cell { width: 56px; height: 42px; font-size: 17px; border-radius: 10px; }
+      .chip { font-size: 15px; padding: 5px 15px; }
+
+      /* user list, sets, badges */
+      .row { padding: 14px 0; gap: 14px; }
+      .row .b { gap: 10px; }
+      .av { width: 48px; height: 48px; font-size: 17px; }
+      .av.big { width: 80px; height: 80px; font-size: 26px; }
+      .prof { gap: 20px; }
+      .badge { font-size: 13px; padding: 1px 10px; }
+      .sl { width: 54px; height: 54px; font-size: 26px; border-radius: 14px; }
+      .sh { gap: 16px; }
+      .sh small { font-size: 14px; }
+      .sh .cnt { font-size: 15px; padding: 6px 14px; }
+      .mems { gap: 8px; }
+      .mem { font-size: 15px; padding: 6px 15px; }
+      .empty { font-size: 26px; }
+      .pill { font-size: 14px; padding: 5px 16px; }
+      .facs { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+      .fac { padding: 18px; border-radius: 14px; }
+      .fac b { font-size: 17px; }
+      .fac span { font-size: 15px; }
+      #toast { font-size: 16px; padding: 13px 26px; }
+
+      /* two columns: form on the left, result / list on the right */
+      #check.on, #users.on, #nt.on, #why.on { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; align-items: start; }
+      #users.on .stats { grid-column: 1 / -1; }
+      #sl { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; align-items: start; }
+      #sl > .card:last-child { grid-column: 1 / -1; }
+      #mc { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; align-items: start; }
+      #log .card, #bk .card { max-width: 820px; }
+    }
+
+    /* very large screens */
+    @media (min-width: 1700px) {
+      body { font-size: 19px; }
+      .app { grid-template-columns: 260px 1fr; }
+      .pane { max-width: 1440px; }
+    }
+
+    /* ===================== ENHANCED DESIGN =====================
+       A polish layer: gradients, softer shadows, numbered steps, switches, animations,
+       a light / dark button and a new login page. The layout and features are unchanged. */
+    :root {
+      --acc3: color-mix(in srgb, var(--acc), #8a5cff 45%);
+      --ring: color-mix(in srgb, var(--acc) 24%, transparent);
+      --lift: 0 12px 30px rgba(22, 26, 61, .14);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+    ::selection { background: var(--acc); color: var(--onacc); }
+    * { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+    .app { background: radial-gradient(900px 360px at 18% -90px, color-mix(in srgb, var(--acc) 11%, transparent), transparent 70%); }
+
+    /* ----- login page ----- */
+    #login .lock { background: linear-gradient(135deg, var(--acc), var(--acc3)); box-shadow: 0 10px 24px color-mix(in srgb, var(--acc) 40%, transparent); }
+    #login .card { box-shadow: var(--lift); }
+    #login .hero { display: none; }
+
+    /* ----- menu on the left ----- */
+    aside { background: linear-gradient(180deg, var(--side) 0%, color-mix(in srgb, var(--side) 80%, var(--acc)) 100%); }
+    aside .brand { display: flex; flex-direction: column; align-items: center; gap: 8px; padding-bottom: 14px; }
+    aside .brand .logo { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; font-size: 21px; background: linear-gradient(135deg, var(--acc), var(--acc3)); box-shadow: 0 6px 16px rgba(79, 95, 232, .5); }
+    aside button { transition: background .15s, transform .15s, box-shadow .15s; }
+    aside button:hover { background: #ffffff1a; transform: translateY(-1px); }
+    aside button[aria-current="true"] { background: linear-gradient(135deg, var(--acc), var(--acc3)); box-shadow: inset 3px 0 0 var(--gold), 0 8px 18px rgba(79, 95, 232, .4); }
+    .me-chip { margin-top: auto; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px 6px; border-radius: 14px; background: #ffffff12; }
+    .me-chip .av { width: 38px; height: 38px; font-size: 14px; background: #ffffff24; color: #fff; }
+    .me-chip .who-txt { display: none; line-height: 1.25; min-width: 0; }
+    .me-chip b { display: block; color: #fff; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .me-chip small { color: var(--sideink); font-size: 12px; }
+    aside .out { margin-top: 8px; padding-top: 9px; border-top: 0; border-radius: 12px; }
+    aside .out:hover { background: rgba(255, 107, 94, .18); color: #ffb4ad; }
+
+    /* ----- page header ----- */
+    .top h2 { letter-spacing: -.01em; }
+    .desc { margin: 4px 0 8px; color: var(--mute); font-size: 14px; }
+    .top small { display: inline-block; padding: 2px 11px; border-radius: 999px; background: var(--acc2); color: var(--acc); font-size: 12px; font-weight: 700; }
+    #theme { position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; z-index: 30; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 18px; cursor: pointer; box-shadow: var(--sh); transition: transform .25s; }
+    #theme:hover { transform: rotate(30deg) scale(1.06); }
+
+    /* ----- cards ----- */
+    .card { border-color: color-mix(in srgb, var(--line) 70%, transparent); box-shadow: 0 1px 2px rgba(22, 26, 61, .05), 0 8px 24px rgba(22, 26, 61, .06); }
+    .card > h3 { display: flex; align-items: center; gap: 10px; }
+    .card > h3::before { content: ""; width: 4px; height: 1.1em; border-radius: 3px; background: linear-gradient(var(--acc), var(--acc3)); }
+    section.on { animation: pageIn .3s ease both; }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ----- forms ----- */
+    input, select, textarea { transition: border-color .15s, box-shadow .15s, background-color .15s; }
+    input:hover, select:hover, textarea:hover { border-color: color-mix(in srgb, var(--acc) 45%, var(--line)); }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--acc); box-shadow: 0 0 0 4px var(--ring); background-color: var(--card); }
+    select { -webkit-appearance: none; appearance: none; padding-right: 40px; cursor: pointer; background-repeat: no-repeat; background-position: right 14px center; background-size: 14px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23697089' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 8l5 5 5-5'/%3E%3C/svg%3E"); }
+    .sw input[type=checkbox] { -webkit-appearance: none; appearance: none; flex: none; width: 46px; height: 26px; padding: 0; border: 0; border-radius: 999px; background: var(--line); position: relative; cursor: pointer; transition: background .2s; }
+    .sw input[type=checkbox]::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); transition: transform .2s; }
+    .sw input[type=checkbox]:checked { background: var(--acc); }
+    .sw input[type=checkbox]:checked::after { transform: translateX(20px); }
+    button.go { font-family: inherit; background: linear-gradient(135deg, var(--acc), var(--acc3)); box-shadow: 0 6px 16px color-mix(in srgb, var(--acc) 35%, transparent); transition: transform .15s, box-shadow .15s, filter .15s; }
+    button.go:hover { filter: brightness(1.07); box-shadow: 0 9px 22px color-mix(in srgb, var(--acc) 45%, transparent); }
+    button.go.alt { background: none; box-shadow: none; }
+    button.go.alt:hover { background: var(--acc2); filter: none; }
+    button.sm { transition: background .15s; }
+    button.sm:hover { background: var(--nobg); }
+    button.sm.ed:hover { background: var(--acc2); }
+
+    /* ----- check result ----- */
+    .steps { counter-reset: step; border-left: 0; margin-top: 14px; }
+    .steps li { counter-increment: step; position: relative; padding: 8px 0 14px 46px; animation: rise .35s ease both; }
+    .steps li.p, .steps li.f { border-left: 0; margin-left: 0; }
+    .steps li::before { content: counter(step); position: absolute; left: 0; top: 5px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 700; background: var(--line); color: var(--mute); }
+    .steps li.p::before { content: "\2713"; background: var(--okbg); color: var(--ok); }
+    .steps li.f::before { content: "\2715"; background: var(--nobg); color: var(--no); }
+    .steps li::after { content: ""; position: absolute; left: 14px; top: 38px; bottom: 0; width: 2px; background: var(--line); }
+    .steps li:last-child::after { display: none; }
+    .steps li:nth-child(2) { animation-delay: .07s; } .steps li:nth-child(3) { animation-delay: .14s; }
+    .steps li:nth-child(4) { animation-delay: .21s; } .steps li:nth-child(5) { animation-delay: .28s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .res { animation: pop .4s cubic-bezier(.2, 1.4, .4, 1) both; animation-delay: .3s; }
+    .res.ok { box-shadow: 0 8px 24px color-mix(in srgb, var(--ok) 25%, transparent); }
+    .res.no { box-shadow: 0 8px 24px color-mix(in srgb, var(--no) 25%, transparent); }
+    @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+
+    /* ----- numbers, tables, lists ----- */
+    .stat { position: relative; transition: transform .2s, box-shadow .2s; }
+    .stat:hover, .set:hover, .fac:hover { transform: translateY(-2px); box-shadow: var(--lift); }
+    .stat::before { display: block; font-size: 22px; margin-bottom: 2px; }
+    .stat:nth-child(1)::before { content: "\1F465"; } .stat:nth-child(2)::before { content: "\2705"; } .stat:nth-child(3)::before { content: "\26D4"; }
+    .stat b { background: linear-gradient(135deg, var(--acc), var(--acc3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .set, .fac { transition: transform .2s, box-shadow .2s; }
+    th { text-transform: uppercase; letter-spacing: .05em; font-size: 11px; }
+    td:first-child { font-weight: 600; }
+    tr:hover td { background: color-mix(in srgb, var(--acc2) 60%, transparent); }
+    button.cell, span.cell { transition: transform .12s, background .15s; }
+    button.cell:hover { transform: scale(1.1); }
+    button.cell.on, span.cell.on { box-shadow: 0 3px 10px color-mix(in srgb, var(--ok) 35%, transparent); }
+    .row { margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 10px; transition: background .15s; }
+    .row:hover { background: color-mix(in srgb, var(--acc2) 55%, transparent); }
+    .av { box-shadow: inset 0 0 0 2px color-mix(in srgb, currentColor 18%, transparent); }
+    #toast { display: flex; align-items: center; gap: 8px; box-shadow: var(--lift); }
+    #toast::before { content: "\2713"; color: var(--gold); font-weight: 700; }
+
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+    /* ===== enhanced design on desktop ===== */
+    @media (min-width: 1000px) {
+      #login { display: grid; grid-template-columns: 1.1fr 1fr; padding: 0; align-items: stretch; }
+      #login .card { align-self: center; justify-self: center; }
+      #login .hero { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; gap: 20px; padding: 64px; color: #fff; background: linear-gradient(145deg, #0f2d30 0%, #0e5a54 100%); }
+      #login .hero::before, #login .hero::after { content: ""; position: absolute; border-radius: 50%; background: #ffffff10; }
+      #login .hero::before { width: 420px; height: 420px; right: -120px; top: -120px; }
+      #login .hero::after { width: 300px; height: 300px; left: -90px; bottom: -90px; }
+      .hero > * { position: relative; z-index: 1; }
+      .hero-logo { width: 72px; height: 72px; border-radius: 22px; display: grid; place-items: center; font-size: 36px; background: #ffffff1f; border: 1px solid #ffffff30; }
+      .hero h2 { font: 700 44px/1.1 Georgia, serif; color: #fff; }
+      .hero p { max-width: 480px; font-size: 19px; line-height: 1.55; color: #d4d9ff; margin: 0; }
+      .hero ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 520px; }
+      .hero li { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: 16px; font-weight: 600; background: #ffffff14; border: 1px solid #ffffff22; }
+      .hero li span { font-size: 22px; }
+
+      aside .brand { flex-direction: row; align-items: center; gap: 14px; padding: 6px 10px 22px; font-size: 20px; text-align: left; }
+      aside .brand .logo { width: 46px; height: 46px; font-size: 23px; }
+      .me-chip { justify-content: flex-start; padding: 12px; }
+      .me-chip .who-txt { display: block; }
+      .me-chip .av { width: 42px; height: 42px; }
+      .desc { font-size: 16px; margin-bottom: 10px; }
+      .top small { font-size: 13px; }
+      #theme { top: 22px; right: 28px; }
+    }
+  </style>
+<style>
+    /* ===== final project pages ===== */
+    .tree, .tree ul { list-style: none; margin: 0; padding-left: 20px; border-left: 2px solid var(--line); }
+    .tree { padding-left: 0; border-left: 0; }
+    .tree li { margin: 10px 0; }
+    .hash { word-break: break-all; font-size: 12px; }
+    #gsvg { width: 100%; max-width: 560px; height: auto; display: block; margin: 8px auto; }
+    #gsvg text { fill: var(--ink); }
+    tr.now td { background: var(--acc2); font-weight: 700; }
+    #sub { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 14px; }
+    #sub:empty { display: none; }
+    #sub button { flex: none; padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font-weight: 600; font-size: 14px; cursor: pointer; }
+    #sub button[aria-current="true"] { background: var(--acc); color: var(--onacc); border-color: var(--acc); }
+    .bigstate { text-align: center; font-size: 26px; font-weight: 800; padding: 18px; border-radius: 16px; background: var(--acc2); color: var(--acc); }
+    @media (min-width: 900px) { #cry.on, #alg.on, #gra.on, #tre.on, #pro.on, #fsm.on { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; align-items: start; } }
+</style>
+<style>
+    /* ===== design refinements ===== */
+    body { font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+    h1, h2, h3, aside .brand, .stat b { font-family: Georgia, "Noto Serif", "Times New Roman", serif; }
+    .top h2 { font-size: 27px; line-height: 1.15; letter-spacing: -.01em; }
+    .desc { color: var(--mute); margin: 4px 0 0; }
+    h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .card, .stat { border-radius: 14px; }
+    label { font-weight: 600; }
+    input, select, textarea { background: var(--card); border-width: 1.5px; }
+    button.go { font-family: inherit; letter-spacing: .01em; }
+    button.go.alt { color: var(--acc); border-color: var(--acc); }
+
+    /* keyboard focus you can actually see */
+    :is(button, input, select, textarea, a):focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+    /* menu: the page you are on gets a gold marker instead of a filled block */
+    aside button { border-radius: 10px; position: relative; }
+    aside button[aria-current="true"] { background: #ffffff1c; color: #fff; box-shadow: inset 4px 0 0 var(--gold); }
+
+    /* the answer of Check access is the main thing, so it gets the most weight */
+    .verdict { display: flex; align-items: center; gap: 16px; padding: 18px; border-radius: 16px; border: 2px solid; margin-bottom: 14px; }
+    .verdict.ok { background: var(--okbg); border-color: var(--ok); color: var(--ok); }
+    .verdict.no { background: var(--nobg); border-color: var(--no); color: var(--no); }
+    .verdict .seal { flex: none; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; font-size: 32px; font-weight: 800; color: var(--card); animation: stamp .35s ease-out; }
+    .verdict.ok .seal { background: var(--ok); }
+    .verdict.no .seal { background: var(--no); }
+    .verdict b { display: block; font: 700 25px/1.15 Georgia, "Noto Serif", serif; }
+    .verdict small { display: block; margin-top: 4px; font-size: 14px; color: var(--ink); }
+    @keyframes stamp { from { transform: scale(.55); opacity: 0; } to { transform: none; opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .verdict .seal { animation: none; } }
+</style>
+</head>
+<body>
+
+<!-- ===================== HTML: the pages ===================== -->
+<div id="login">
+<div class="hero">
+  <div class="hero-logo">🔐</div>
+  <h2>Campus Access Control</h2>
+  <p>Decide who can enter which room, using sets, relations, Boolean logic and number theory.</p>
+  <ul>
+    <li><span>🧩</span> Sets of users</li>
+    <li><span>🔗</span> Access relations</li>
+    <li><span>🔢</span> Number theory checks</li>
+    <li><span>✅</span> Logic proof</li>
+    <li><span>🔑</span> Cryptography</li>
+    <li><span>🗺️</span> Graphs, trees and state machine</li>
+  </ul>
+</div>
+<div class="card"><div class="lock">🔐</div>
+<h1>Campus Access Control</h1><p class="note">Administrator sign in</p>
+<label for="lu">Username</label><input id="lu" autocomplete="username">
+<label for="lp">Password</label><input id="lp" type="password" autocomplete="current-password">
+<div class="err" id="le"></div>
+<button class="go" id="lb">Sign in</button>
+<p class="note">Admin: <code>admin</code> / <code>admin123</code><br>User: your name and your ID, e.g. <code>Ck</code> / <code>2024102</code></p>
+</div></div>
+
+<div class="app" id="app" hidden>
+<aside id="side"><div class="brand"><span class="logo">🔐</span><span>Access<br>Control</span></div></aside>
+<div class="pane">
+<div class="top"><div><h2 id="title"></h2><p class="desc" id="desc"></p><small id="who"></small></div></div>
+<div id="sub"></div>
+
+<section id="me"><div id="mc"></div></section>
+<section id="check"><div class="card"><h3>Check access</h3>
+<label for="cn">User</label><select id="cn"></select>
+<p class="note" id="cid"></p>
+<div id="oth" hidden><label for="on">Name of the person</label><input id="on" placeholder="Not registered"><label for="oi">ID number</label><input id="oi" type="number"></div>
+<label for="cf">Facility</label><select id="cf"></select>
+<button class="go" id="cb">Run check</button></div>
+<div id="cr"></div></section>
+
+<section id="users"><div class="stats" id="st"></div><div class="card"><h3 id="ft">Add user</h3>
+<label for="an">Name</label><input id="an">
+<label for="ai">ID number</label><input id="ai" type="number">
+<label for="at">User type</label><select id="at"></select>
+<div class="sw"><input type="checkbox" id="aa"><span>Authorized</span></div>
+<div class="sw"><input type="checkbox" id="ar"><span>Restricted</span></div>
+<button class="go" id="ab">Add user</button>
+<button class="go alt" id="ac" hidden>Cancel edit</button><p class="note" id="am"></p></div>
+<div class="card"><h3>All users</h3><div id="ul"></div></div></section>
+
+<section id="sets"><div id="sl"></div></section>
+
+<section id="rel"><div class="card"><h3>Access matrix</h3>
+<p class="note">1 = allowed, 0 = denied. <span class="adm">Tap a cell to change it.</span></p>
+<div class="wrap"><table id="mx"></table></div></div>
+<div class="card"><h3>Relation pairs (user type, facility)</h3><div id="pairs" class="chips"></div></div></section>
+
+<section id="nt"><div class="card adm"><h3>ComLab ID rule</h3>
+<div class="sw"><input type="checkbox" id="evenRule"><span>Require an even ID (ID mod 2 = 0)</span></div></div>
+<div class="card"><h3>GCD, LCM and mod</h3>
+<div class="two"><div><label for="na">First ID</label><input id="na" type="number"></div>
+<div><label for="nb">Second ID</label><input id="nb" type="number"></div></div>
+<button class="go" id="nbtn">Calculate</button><div id="nr"></div>
+<p class="note">Two users can share a locker if gcd(ID1, ID2) = 1.</p></div></section>
+
+<section id="log"><div class="card"><h3>Access log</h3><div id="ll"></div>
+<button class="go" id="lc">Clear log</button></div></section>
+
+<section id="why"><div class="card"><h3>Rule</h3>
+<p><code>Access = (type in relation ∨ authorized for Library) ∧ ¬R ∧ ID rule</code></p>
+<p class="note">Truth table of the core part P ∧ ¬R, computed by the program:</p>
+<div class="wrap"><table id="tt"></table></div></div>
+<div class="card"><h3>Consistency check</h3>
+<p class="note">Runs the real access function on every restricted user and every facility, and on every user type with R = true, and counts any case that gets access.</p>
+<button class="go" id="vb">Run proof check</button><div id="vr"></div></div></section>
+
+<section id="bk"><div class="card"><h3>Backup</h3>
+<p class="note">Export fills the box with your data. Copy it somewhere safe. To restore, paste it back and tap Import.</p>
+<textarea id="bt" aria-label="Backup data"></textarea>
+<button class="go" id="be">Export</button><button class="go alt" id="bi">Import</button>
+<button class="go alt" id="br">Reset to default data</button><p class="note" id="bm"></p></div></section>
+
+<section id="cry"><div class="card"><h3>Caesar cipher</h3>
+<p class="note"><code>E(x) = (x + k) mod 26</code> to lock, <code>D(y) = (y − k) mod 26</code> to unlock. A=0, B=1 ... Z=25.</p>
+<label for="cm">Message</label><input id="cm" value="CAT">
+<label for="ck">Key k</label><input id="ck" type="number" value="3">
+<button class="go" id="ce">Encrypt</button><button class="go alt" id="cd">Decrypt</button>
+<div id="cres"></div></div>
+<div class="card"><h3>SHA-256 hash</h3>
+<p class="note">A one-way fingerprint. Login now compares the hash of what you type with the hash of your ID, so no password is compared as plain text.</p>
+<label for="hm">Text</label><input id="hm" value="2024102">
+<button class="go" id="hb">Hash it</button><div id="hres"></div></div>
+<div class="card"><h3>Credential hashes</h3><div id="cred"></div></div></section>
+
+<section id="alg"><div class="card"><h3>Sort the users</h3>
+<label for="sby">Sort by</label><select id="sby"></select>
+<label for="sal">Algorithm</label><select id="sal"><option value="merge">Merge sort (recursive)</option><option value="bubble">Bubble sort</option></select>
+<button class="go" id="sb">Sort</button><div id="sres"></div>
+<p class="note">Try both on the same list. Merge sort needs fewer comparisons.</p></div>
+<div class="card"><h3>Search for a user</h3>
+<label for="qn">Name</label><input id="qn" placeholder="e.g. Luke">
+<label for="qm">Method</label><select id="qm"><option value="linear">Linear search</option><option value="binary">Binary search (sorted list)</option></select>
+<button class="go" id="qb">Search</button><div id="qres"></div></div></section>
+
+<section id="gra"><div class="card"><h3>Campus map (graph)</h3>
+<p class="note" id="gnote"></p>
+<svg id="gsvg" viewBox="0 0 340 240" role="img" aria-label="Campus graph"></svg></div>
+<div class="card"><h3>Find a route</h3>
+<div class="two"><div><label for="gs">From</label><select id="gs"></select></div>
+<div><label for="ge">To</label><select id="ge"></select></div></div>
+<button class="go" id="gb">Find routes</button><div id="gres"></div></div>
+<div class="card"><h3>Adjacency matrix</h3><p class="note">1 = a path joins the two places.</p><div class="wrap"><table id="gmx"></table></div></div></section>
+
+<section id="tre"><div class="card"><h3>Campus tree</h3>
+<ul class="tree" id="tr"></ul><p class="note" id="tstat"></p></div>
+<div class="card"><h3>Traversals (recursion)</h3><div id="tord"></div>
+<label for="tf">Where is this facility?</label><select id="tf"></select>
+<button class="go" id="tb">Find path from the root</button><div id="tfind"></div></div></section>
+
+<section id="pro"><div class="card"><h3>Probability lab</h3>
+<p class="note">Pick k users at random. Let <b>X</b> = how many of them are allowed into the facility.</p>
+<label for="pf">Facility</label><select id="pf"></select>
+<div class="two"><div><label for="pk">Sample size k</label><input id="pk" type="number" value="3"></div>
+<div><label for="pt">Simulation trials</label><input id="pt" type="number" value="5000"></div></div>
+<button class="go" id="pb">Run</button></div>
+<div id="pres"></div></section>
+
+<section id="fsm"><div class="card"><h3>Current state</h3><div class="bigstate" id="fcur"></div>
+<p class="note">Run Check access and the state changes to Access Granted or Access Denied by itself.</p>
+<div id="fbtn"></div><h3 style="margin-top:18px">Recent moves</h3><div id="fhist" class="chips"></div></div>
+<div class="card"><h3>Transition table</h3><div class="wrap"><table id="ftab"></table></div></div></section>
+</div></div>
+<button id="theme" aria-label="Switch light or dark theme" title="Light / dark">🌓</button>
+<div id="toast" role="status"></div>
+
+<script>
+    // ===================== JAVASCRIPT =====================
+    // This page only DRAWS things. app.py (Flask) makes every decision:
+    // login, the access rule, the proof check, the math and the saving.
+
+    const TYPES = ["Student", "Faculty", "Staff", "Visitor"];
+    const FAC = ["Library", "ComLab", "Faculty Room", "Office", "ComLec"];
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    // The data (users, relation, rules, log). It is loaded from Flask, never saved in the browser.
+    let S = { users: {}, rel: [], even: false, log: [], mine: {} };
+    let role = null, me = null, cur = "check";
+    let pend = null, editing = null;
+
+    const NAV = {
+      admin: ["check", "users", "sets", "rel", "nt", "cry", "alg", "gra", "tre", "pro", "fsm", "log", "why", "bk"],
+      user: ["me", "check", "sets", "rel", "nt", "cry", "alg", "gra", "tre", "pro", "fsm", "why"],
+    };
+    const TABS = [
+      ["me", "My access", "🪪"], ["check", "Check access", "🛡️"], ["users", "Users", "👥"],
+      ["sets", "Sets", "🧩"], ["rel", "Relations", "🔗"], ["nt", "Number theory", "🔢"],
+      ["cry", "Cryptography", "🔑"], ["alg", "Algorithms", "⚙️"], ["gra", "Campus map", "🗺️"],
+      ["tre", "Trees", "🌳"], ["pro", "Probability", "🎲"], ["fsm", "State machine", "🔄"],
+      ["log", "Access log", "📜"], ["why", "Logic proof", "✅"], ["bk", "Backup", "💾"],
+    ];
+
+    // The menu is grouped so it stays short. Each group opens its first page, and small tabs switch between its pages.
+    const GROUPS = [
+      ["Check access", "🛡️", ["me", "check"]],
+      ["Users", "👥", ["users"]],
+      ["Math & Logic", "🧮", ["sets", "rel", "nt", "why"]],
+      ["Tools", "⚙️", ["alg", "cry", "pro"]],
+      ["Campus", "🗺️", ["gra", "tre", "fsm"]],
+      ["Admin", "🛠️", ["log", "bk"]],
+    ];
+    const SHORT = { me: "My access", check: "Check", sets: "Sets", rel: "Relations", nt: "Number theory", why: "Logic proof",
+      alg: "Sort & search", cry: "Cryptography", pro: "Probability", gra: "Map", tre: "Tree", fsm: "State machine",
+      log: "Access log", bk: "Backup" };
+
+    // short text under each page title
+    const DESC = {
+      me: "Where you can go right now",
+      check: "Test whether a person can enter a facility",
+      users: "Add, edit and remove people",
+      sets: "Who belongs to which group",
+      rel: "Which user types may enter which facility",
+      nt: "ID rules, GCD and LCM",
+      cry: "Caesar cipher and SHA-256 hashing",
+      alg: "Sorting and searching the users",
+      gra: "Graph of campus paths and shortest route",
+      tre: "Campus organised as a tree, with recursion",
+      pro: "Counting, probability and a random variable",
+      fsm: "System states and how they change",
+      log: "Every access check, newest first",
+      why: "Why the rules are consistent",
+      bk: "Save, restore or reset your data",
+    };
+
+    // ---------- light / dark theme ----------
+    try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) { /* ignore */ }
+    $("theme").onclick = () => {
+      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const now = document.documentElement.dataset.theme || (dark ? "dark" : "light");
+      const next = now === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch (e) { /* ignore */ }
+    };
+
+    // ---------- talking to Flask ----------
+    async function api(url, body) {
+      const options = body === undefined ? {} :
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) };
+      const reply = await fetch(url, options);
+      let data = {};
+      try { data = await reply.json(); } catch (e) { /* no body */ }
+      if (reply.status === 401 && url !== "/api/login") { signOut(false); return null; }
+      return { ok: reply.ok, data };
+    }
+
+    async function loadState() {
+      const r = await api("/api/state");
+      if (r && r.ok) S = r.data;
+    }
+
+    // ---------- login, menu, sign out ----------
+    function buildNav() {
+      const a = $("side");
+      a.innerHTML = '<div class="brand"><span class="logo">🔐</span><span>Access<br>Control</span></div>';
+      GROUPS.forEach(([label, ic, ids]) => {
+        const mine = ids.filter((k) => NAV[role].includes(k));
+        if (!mine.length) return;
+        const b = document.createElement("button");
+        b.innerHTML = `<span>${ic}</span>${label}`;
+        b.dataset.tab = mine[0];
+        b.dataset.group = ids.join(",");
+        a.appendChild(b);
+      });
+      const chip = document.createElement("div");
+      chip.className = "me-chip";
+      const label = role == "admin" ? "Admin" : me;
+      chip.innerHTML = `<div class="av ${role == "admin" ? "Faculty" : ""}">${esc(label.replace(/^Sir\.? /, "").slice(0, 2))}</div><div class="who-txt"><b>${esc(label)}</b><small>${role == "admin" ? "Administrator" : "User account"}</small></div>`;
+      a.appendChild(chip);
+      const o = document.createElement("button");
+      o.id = "so";
+      o.className = "out";
+      o.innerHTML = "<span>🚪</span>Sign out";
+      o.onclick = () => signOut(true);
+      a.appendChild(o);
+    }
+
+    async function login() {
+      const r = await api("/api/login", { username: $("lu").value.trim(), password: $("lp").value });
+      if (!r.ok) { $("le").textContent = "Wrong username or password."; return; }
+      enter(r.data.role, r.data.me);
+    }
+
+    async function enter(r, name) {
+      role = r;
+      me = name;
+      $("le").textContent = "";
+      $("lp").value = "";
+      $("login").hidden = true;
+      $("app").hidden = false;
+      $("who").textContent = r == "admin" ? "Signed in as admin" : "Signed in as " + me;
+      document.body.dataset.role = r;
+      buildNav();
+      show(r == "admin" ? "check" : "me");
+    }
+
+    async function signOut(callServer) {
+      if (callServer) await api("/api/logout", {});
+      role = null;
+      me = null;
+      $("app").hidden = true;
+      $("login").hidden = false;
+      $("lu").value = "";
+      $("cr").innerHTML = "";
+    }
+
+    $("lb").onclick = login;
+    [$("lu"), $("lp")].forEach((i) => i.onkeydown = (e) => { if (e.key == "Enter") login(); });
+
+    // the small tabs under the title (only when the group has more than one page)
+    function drawSub(id) {
+      const g = GROUPS.find(([, , ids]) => ids.includes(id));
+      const mine = g ? g[2].filter((k) => NAV[role].includes(k)) : [];
+      $("sub").innerHTML = mine.length > 1
+        ? mine.map((k) => `<button data-tab="${k}" aria-current="${k == id}">${SHORT[k]}</button>`).join("") : "";
+    }
+
+    async function show(id) {
+      cur = id;
+      pend = null;
+      $("cr").innerHTML = "";
+      TABS.forEach(([k, t]) => {
+        $(k).classList.toggle("on", k == id);
+        if (k == id) { $("title").textContent = t; $("desc").textContent = DESC[id] || ""; }
+      });
+      document.querySelectorAll("aside [data-tab]").forEach((b) =>
+        b.setAttribute("aria-current", (b.dataset.group || "").split(",").includes(id)));
+      drawSub(id);
+      window.scrollTo(0, 0);
+      await loadState();          // always show the newest data from Flask
+      if (cur == id) render();
+    }
+
+    let tt0;
+    function toast(m) {
+      const t = $("toast");
+      t.textContent = m;
+      t.classList.add("on");
+      clearTimeout(tt0);
+      tt0 = setTimeout(() => t.classList.remove("on"), 1800);
+    }
+    const opt = (a) => a.map((x) => `<option>${esc(x)}</option>`).join("");
+
+    // ---------- drawing the pages (only the open page is drawn) ----------
+    function render() {
+      if (cur == "cry") loadCred();
+      if (cur == "alg") fillAlg();
+      if (cur == "gra") loadGraph();
+      if (cur == "tre") loadTree();
+      if (cur == "pro" && !$("pf").innerHTML) $("pf").innerHTML = opt(FAC);
+      if (cur == "fsm") loadFsm();
+      if (cur == "check") {
+        const keep = $("cn").value, usr = role == "user";
+        $("cn").innerHTML = opt(usr ? [me] : Object.keys(S.users)) + (usr ? "" : '<option value="__o">Someone not registered</option>');
+        $("cn").disabled = usr;
+        if (usr) $("cn").value = me;
+        else if (keep && [...$("cn").options].some((o) => o.value == keep)) $("cn").value = keep;
+        chSel();
+      }
+      if (!$("cf").innerHTML) { $("cf").innerHTML = opt(FAC); $("at").innerHTML = opt(TYPES); }
+      if (cur == "nt") $("evenRule").checked = S.even;
+      if (cur == "me") renderMe();
+
+      if (cur == "users") {
+        $("ul").innerHTML = Object.entries(S.users).map(([n, u]) => `<div class="row"><div class="l"><div class="av ${u.t}">${esc(n.replace(/^Sir\.? /, "").slice(0, 2))}</div><div>${esc(n)} <small>#${u.id}</small><br><small>${u.t}</small>${u.a ? '<span class="badge a">authorized</span>' : ""}${u.r ? '<span class="badge r">restricted</span>' : ""}</div></div><div class="b"><button class="sm ed" data-e="${esc(n)}">Edit</button><button class="sm" data-d="${esc(n)}">${pend == n ? "Sure? Remove" : "Remove"}</button></div></div>`).join("") || '<p class="note">No users yet.</p>';
+        const us = Object.values(S.users);
+        $("st").innerHTML = [["Users", us.length], ["Authorized", us.filter((u) => u.a).length], ["Restricted", us.filter((u) => u.r).length]]
+          .map(([k, v]) => `<div class="stat"><b>${v}</b><span>${k}</span></div>`).join("");
+      }
+
+      const grp = (f) => Object.keys(S.users).filter((n) => f(S.users[n]));
+      if (cur == "sets") {
+        const sets = [["Student", "S", "Students", grp((u) => u.t == "Student")], ["Faculty", "F", "Faculty", grp((u) => u.t == "Faculty")],
+          ["Staff", "T", "Staff", grp((u) => u.t == "Staff")], ["Visitor", "V", "Visitors", grp((u) => u.t == "Visitor")],
+          ["A", "A", "Authorized users", grp((u) => u.a)], ["R", "R", "Restricted users", grp((u) => u.r)]];
+        const both = grp((u) => u.a && u.r);
+        $("sl").innerHTML = sets.map(([c, l, t, v]) => `<div class="card set ${c}"><div class="sh"><div class="sl">${l}</div><div><h3>${t}</h3><small>${l} = {${v.map(esc).join(", ")}}</small></div><span class="cnt">|${l}| = ${v.length}</span></div><div class="mems">${v.length ? v.map((n) => `<span class="mem">${esc(n)}</span>`).join("") : '<span class="empty">∅</span>'}</div></div>`).join("") +
+          `<div class="card"><h3>Set check</h3><p class="note">|U| = ${Object.keys(S.users).length} users in total.<br>A ∩ R = {${both.map(esc).join(", ")}} ${both.length ? "(a user who is both gets denied, because R wins)" : "(nobody is both authorized and restricted)"}</p></div>`;
+      }
+
+      if (cur == "rel") {
+        $("mx").innerHTML = "<tr><th>Type</th>" + FAC.map((f) => `<th>${f}</th>`).join("") + "</tr>" +
+          TYPES.map((t) => `<tr><td>${t}</td>` + FAC.map((f) => {
+            const on = S.rel.includes(t + "|" + f);
+            return `<td>${role == "admin" ? `<button class="cell ${on ? "on" : ""}" data-t="${t}|${f}" aria-label="${t} ${f}">${on ? 1 : 0}</button>` : `<span class="cell ${on ? "on" : ""}">${on ? 1 : 0}</span>`}</td>`;
+          }).join("") + "</tr>").join("");
+        $("pairs").innerHTML = S.rel.map((p) => `<span class="chip">(${p.split("|").join(", ")})</span>`).join("") || '<p class="note">No pairs. Nobody can enter anywhere.</p>';
+      }
+
+      if (cur == "log") {
+        $("ll").innerHTML = S.log.map((l) => `<div class="row"><div>${esc(l.n)} → ${l.f}<br><small>${l.t}</small></div><span class="pill ${l.ok ? "y" : "n"}">${l.ok ? "Granted" : "Denied"}</span></div>`).join("") || '<p class="note">No checks yet.</p>';
+      }
+
+      if (cur == "why") {
+        const tt = [];
+        for (const p of [0, 1]) for (const r of [0, 1]) tt.push(`<tr><td>${p}</td><td>${r}</td><td class="${p && !r ? "y" : "n"}">${p && !r ? 1 : 0}</td></tr>`);
+        $("tt").innerHTML = "<tr><th>P (type allowed)</th><th>R (restricted)</th><th>P ∧ ¬R</th></tr>" + tt.join("");
+      }
+    }
+
+    function renderMe() {
+      const u = S.users[me];
+      if (!u) { $("mc").innerHTML = '<div class="card">Your account was removed. Ask an admin.</div>'; return; }
+      const rows = FAC.map((f) => `<div class="fac ${S.mine[f] ? "ok" : "no"}"><b>${f}</b><span>${S.mine[f] ? "✔ Allowed" : "✖ Denied"}</span></div>`).join("");
+      $("mc").innerHTML = `<div class="card prof"><div class="av big ${u.t}">${esc(me.replace(/^Sir\.? /, "").slice(0, 2))}</div><div><h3>${esc(me)}</h3><span class="note">${u.t} · ID #${u.id}</span><br>${u.a ? '<span class="badge a" style="margin:0 4px 0 0">authorized</span>' : ""}${u.r ? '<span class="badge r" style="margin:0">restricted</span>' : ""}</div></div><div class="card"><h3>Your facilities</h3><div class="facs">${rows}</div><p class="note">Based on the current rules set by the admin.</p></div>`;
+    }
+
+    function chSel() {
+      const o = $("cn").value == "__o";
+      $("oth").hidden = !o;
+      $("cid").hidden = o;
+      if (!o && S.users[$("cn").value]) $("cid").textContent = "ID on file: " + S.users[$("cn").value].id;
+    }
+    $("cn").onchange = () => { chSel(); $("cr").innerHTML = ""; };
+    $("cf").onchange = () => { $("cr").innerHTML = ""; };
+
+    // ---------- Check access: Flask decides, the page shows the steps ----------
+    $("cb").onclick = async () => {
+      const r = await api("/api/check", { user: $("cn").value, other_name: $("on").value, other_id: $("oi").value, facility: $("cf").value });
+      if (!r) return;
+      if (!r.ok) { $("cr").innerHTML = `<div class="res no">${esc(r.data.error)}</div>`; return; }
+      const d = r.data;
+      const who = ($("oth").hidden ? $("cn").value : $("on").value.trim()) || "This person";
+      $("cr").innerHTML = `<div class="verdict ${d.allowed ? "ok" : "no"}"><div class="seal">${d.allowed ? "✓" : "✕"}</div><div><b>${d.allowed ? "Access granted" : "Access denied"}</b><small>${esc(who)} at ${esc($("cf").value)}</small></div></div>` +
+        `<div class="card"><h3>How the decision was made</h3><ul class="steps">${d.steps.map((s) => `<li class="${s.ok ? "p" : "f"}">${esc(s.title)}<b>${esc(s.detail)}</b></li>`).join("")}</ul></div>`;
+    };
+
+    // ---------- Users: add / edit / remove ----------
+    function endEdit() {
+      editing = null;
+      $("ft").textContent = "Add user";
+      $("ab").textContent = "Add user";
+      $("ac").hidden = true;
+      ["an", "ai"].forEach((i) => $(i).value = "");
+      $("aa").checked = $("ar").checked = false;
+    }
+    $("ac").onclick = () => { endEdit(); $("am").textContent = ""; };
+    $("ab").onclick = async () => {
+      const r = await api("/api/users/save", { original: editing || "", name: $("an").value.trim(), id: $("ai").value, type: $("at").value, authorized: $("aa").checked, restricted: $("ar").checked });
+      if (!r) return;
+      if (!r.ok) { $("am").textContent = r.data.message; return; }
+      $("am").textContent = "";
+      toast(r.data.message);
+      endEdit();
+      await loadState();
+      render();
+    };
+
+    // ---------- every click on the page ----------
+    document.addEventListener("click", async (e) => {
+      const el = e.target.closest("[data-tab],[data-e],[data-d],[data-t]"), d = el ? el.dataset : {};
+      if (d.tab) show(d.tab);
+      if (role != "admin") return;
+      if (d.e) {
+        const u = S.users[d.e];
+        editing = d.e;
+        $("ft").textContent = "Edit user";
+        $("ab").textContent = "Save changes";
+        $("ac").hidden = false;
+        $("an").value = d.e; $("ai").value = u.id; $("at").value = u.t;
+        $("aa").checked = !!u.a; $("ar").checked = !!u.r;
+        $("am").textContent = "";
+        window.scrollTo(0, 0);
+      }
+      if (d.d) {
+        if (pend == d.d) {
+          pend = null;
+          await api("/api/users/delete", { name: d.d });
+          toast(d.d + " removed");
+          await loadState();
+        } else pend = d.d;
+        render();
+      } else if (pend && !d.d) { pend = null; render(); }
+      if (d.t) {
+        await api("/api/relations/toggle", { key: d.t });
+        await loadState();
+        render();
+      }
+    });
+
+    // ---------- Number theory ----------
+    $("evenRule").onchange = (e) => { S.even = e.target.checked; api("/api/even", { even: e.target.checked }); };
+    $("nbtn").onclick = async () => {
+      const r = await api("/api/calc", { a: $("na").value, b: $("nb").value });
+      if (!r) return;
+      if (!r.ok) { $("nr").innerHTML = `<p class="n">${esc(r.data.error)}</p>`; return; }
+      const c = r.data;
+      $("nr").innerHTML = `<p>gcd = <b>${c.gcd}</b><br>lcm = <b>${c.lcm}</b><br>${c.a} mod ${c.b} = <b>${c.mod}</b><br>${c.gcd == 1 ? '<span class="y">Coprime: they can share a locker.</span>' : '<span class="n">Not coprime.</span>'}</p>`;
+    };
+
+    // ---------- Access log ----------
+    $("lc").onclick = async () => { await api("/api/log/clear", {}); await loadState(); render(); };
+
+    // ---------- Logic proof ----------
+    $("vb").onclick = async () => {
+      const r = await api("/api/proof");
+      if (!r) return;
+      const p = r.data;
+      $("vr").innerHTML = p.violations.length
+        ? `<p class="n">Checked ${p.cases} cases. ${p.violations.length} violation(s): ${esc(p.violations.join(", "))}</p>`
+        : `<p class="y">Checked ${p.cases} cases. 0 violations. Restricted users are always denied, so the rule is consistent.</p>`;
+    };
+
+    // ---------- Backup ----------
+    $("be").onclick = async () => {
+      const r = await api("/api/backup/export");
+      if (!r) return;
+      $("bt").value = JSON.stringify(r.data);
+      $("bm").textContent = "Exported. Copy the text above.";
+    };
+    $("bi").onclick = async () => {
+      let data;
+      try { data = JSON.parse($("bt").value); } catch (e) { $("bm").textContent = "That text is not valid backup data."; return; }
+      const r = await api("/api/backup/import", data);
+      if (!r) return;
+      if (!r.ok) { $("bm").textContent = "That text is not valid backup data."; return; }
+      await loadState();
+      render();
+      $("bm").textContent = "Imported.";
+    };
+    $("br").onclick = async () => {
+      await api("/api/backup/reset", {});
+      await loadState();
+      render();
+      $("bm").textContent = "Data reset to defaults.";
+    };
+
+
+    // ===================== FINAL PROJECT PAGES =====================
+    const errBox = (m) => `<div class="res no">${esc(m)}</div>`;
+    const pct = (x) => (x * 100).toFixed(1) + "%";
+
+    // ---------- Cryptography ----------
+    async function caesarRun(mode) {
+      const r = await api("/api/crypto/caesar", { text: $("cm").value, k: $("ck").value, mode });
+      if (!r) return;
+      if (!r.ok) { $("cres").innerHTML = errBox(r.data.error); return; }
+      const d = r.data;
+      $("cres").innerHTML = `<h3>${mode == "encrypt" ? "Encrypted" : "Decrypted"}</h3><p><code class="hash">${esc(d.result)}</code></p>` +
+        `<ul class="steps">${d.steps.map((x) => `<li class="p">${esc(x)}</li>`).join("")}</ul>` +
+        `<p class="note">Key ${esc($("ck").value)} acts like k mod 26 = ${d.k_mod}.</p>`;
+    }
+    $("ce").onclick = () => caesarRun("encrypt");
+    $("cd").onclick = () => caesarRun("decrypt");
+    $("hb").onclick = async () => {
+      const r = await api("/api/crypto/hash", { text: $("hm").value });
+      if (!r) return;
+      $("hres").innerHTML = `<p><code class="hash">${esc(r.data.hash)}</code></p><p class="note">${r.data.bits} bits. Change one character and the whole hash changes. You cannot turn it back into the text.</p>`;
+    };
+    async function loadCred() {
+      const r = await api("/api/crypto/credentials");
+      if (!r || !r.ok) return;
+      $("cred").innerHTML = r.data.rows.map((x) => `<div class="row"><div>${esc(x.name)}</div><code class="hash">${esc(x.hash)}…</code></div>`).join("");
+    }
+
+    // ---------- Sorting and searching ----------
+    function fillAlg() {
+      if ($("sby").dataset.role == role) return;
+      $("sby").innerHTML = '<option value="name">Name</option><option value="type">User type</option>' + (role == "admin" ? '<option value="id">ID number</option>' : "");
+      $("sby").dataset.role = role;
+    }
+    $("sb").onclick = async () => {
+      const r = await api("/api/algo/sort", { by: $("sby").value, algo: $("sal").value });
+      if (!r) return;
+      if (!r.ok) { $("sres").innerHTML = errBox(r.data.error); return; }
+      const d = r.data;
+      $("sres").innerHTML = `<p class="note">${d.n} users sorted with <b>${d.comparisons}</b> comparisons.</p>` +
+        d.rows.map((u, i) => `<div class="row"><div>${i + 1}. ${esc(u.name)} <small>${u.type}${u.id != null ? " · #" + u.id : ""}</small></div></div>`).join("");
+    };
+    $("qb").onclick = async () => {
+      const r = await api("/api/algo/search", { query: $("qn").value, method: $("qm").value });
+      if (!r) return;
+      if (!r.ok) { $("qres").innerHTML = errBox(r.data.error); return; }
+      const d = r.data;
+      $("qres").innerHTML = `<ul class="steps">${d.steps.map((x) => `<li class="${x.hit ? "p" : ""}">${esc(x.text)}</li>`).join("")}</ul>` +
+        `<div class="res ${d.found ? "ok" : "no"}">${d.found ? "Found " + esc(d.name) : "Not found"} in ${d.steps.length} step(s), out of ${d.n} users</div>`;
+    };
+
+    // ---------- Graph: campus map ----------
+    let G = null;
+    function drawGraph(path) {
+      const hot = new Set();
+      for (let i = 0; i < path.length - 1; i++) { hot.add(path[i] + "|" + path[i + 1]); hot.add(path[i + 1] + "|" + path[i]); }
+      const P = G.pos;
+      const lines = G.edges.map(([a, b, w]) => {
+        const [x1, y1] = P[a], [x2, y2] = P[b], on = hot.has(a + "|" + b);
+        return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${on ? "var(--acc)" : "var(--line)"}" stroke-width="${on ? 6 : 3}" stroke-linecap="round"/>` +
+          `<text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 - 6}" text-anchor="middle" font-size="11">${w} m</text>`;
+      }).join("");
+      const dots = G.nodes.map((n) => {
+        const [x, y] = P[n], on = path.includes(n);
+        return `<circle cx="${x}" cy="${y}" r="15" fill="${on ? "var(--acc)" : "var(--card)"}" stroke="var(--acc)" stroke-width="2.5"/>` +
+          `<text x="${x}" y="${y + 32}" text-anchor="middle" font-size="12" font-weight="700">${esc(n)}</text>`;
+      }).join("");
+      $("gsvg").innerHTML = lines + dots;
+    }
+    async function loadGraph() {
+      if (!G) {
+        const r = await api("/api/graph");
+        if (!r || !r.ok) return;
+        G = r.data;
+        $("gs").innerHTML = opt(G.nodes); $("ge").innerHTML = opt(G.nodes); $("ge").value = "ComLab";
+        $("gmx").innerHTML = "<tr><th></th>" + G.nodes.map((n) => `<th>${esc(n)}</th>`).join("") + "</tr>" +
+          G.nodes.map((n, i) => `<tr><td>${esc(n)}</td>` + G.matrix[i].map((v) => `<td>${v}</td>`).join("") + "</tr>").join("");
+      }
+      $("gnote").textContent = `${G.nodes.length} places, ${G.edges.length} paths. ` + (G.connected ? "Every place can be reached from the Gate." : "Some places cannot be reached.");
+      drawGraph([]);
+    }
+    $("gb").onclick = async () => {
+      const r = await api("/api/graph/route", { start: $("gs").value, end: $("ge").value });
+      if (!r) return;
+      if (!r.ok) { $("gres").innerHTML = errBox(r.data.error); return; }
+      const d = r.data;
+      drawGraph(d.shortest || []);
+      $("gres").innerHTML = `<div class="res ok">Shortest: ${esc(d.shortest.join(" → "))} (${d.distance} m)</div>` +
+        `<p class="note">${d.routes.length} possible route(s), found by recursion and sorted by length:</p>` +
+        d.routes.map((x) => `<div class="row"><div>${esc(x.path.join(" → "))}</div><b>${x.length} m</b></div>`).join("");
+    };
+
+    // ---------- Tree ----------
+    const treeHtml = (n) => `<li><span class="chip">${esc(n.name)}</span>${n.children.length ? "<ul>" + n.children.map(treeHtml).join("") + "</ul>" : ""}</li>`;
+    let TR = null;
+    async function loadTree() {
+      if (!TR) {
+        const r = await api("/api/tree");
+        if (!r || !r.ok) return;
+        TR = r.data;
+        $("tr").innerHTML = treeHtml(TR.tree);
+        $("tstat").textContent = `Height = ${TR.height}, leaves (rooms) = ${TR.leaves}.`;
+        $("tord").innerHTML = `<p class="note">Preorder (parent first)</p><div class="chips">${TR.preorder.map((x) => `<span class="chip">${esc(x)}</span>`).join("")}</div>` +
+          `<p class="note">Postorder (children first)</p><div class="chips">${TR.postorder.map((x) => `<span class="chip">${esc(x)}</span>`).join("")}</div>`;
+        $("tf").innerHTML = opt(FAC);
+      }
+    }
+    $("tb").onclick = async () => {
+      const r = await api("/api/tree?find=" + encodeURIComponent($("tf").value));
+      if (!r || !r.ok) return;
+      $("tfind").innerHTML = `<div class="res ok">${esc((r.data.found || []).join(" → "))}</div>`;
+    };
+
+    // ---------- Probability ----------
+    $("pb").onclick = async () => {
+      const r = await api("/api/prob", { facility: $("pf").value, k: $("pk").value, trials: $("pt").value });
+      if (!r) return;
+      if (!r.ok) { $("pres").innerHTML = errBox(r.data.error); return; }
+      const d = r.data;
+      $("pres").innerHTML =
+        `<div class="card"><h3>Counting</h3><p class="note">${d.n} users, ${d.g} allowed at ${esc(d.facility)}.</p>` +
+        `<p>Groups of ${d.k}: C(${d.n}, ${d.k}) = <b>${d.ways_choose}</b><br>Ways to line up ${d.k}: P(${d.n}, ${d.k}) = <b>${d.ways_line_up}</b></p></div>` +
+        `<div class="card"><h3>Probability</h3><p>One random user is allowed:<br>exact ${d.g}/${d.n} = <b>${pct(d.p_exact)}</b><br>simulated (${d.trials} trials) = <b>${pct(d.p_sim)}</b></p></div>` +
+        `<div class="card"><h3>Random variable X</h3><div class="wrap"><table><tr><th>x</th><th>P(X = x)</th><th>Simulated</th></tr>` +
+        d.pmf.map((p) => `<tr><td>${p.x}</td><td>${p.exact.toFixed(4)}</td><td>${p.sim.toFixed(4)}</td></tr>`).join("") + `</table></div>` +
+        `<p>E[X] = k · g/n = <b>${d.mean_exact.toFixed(3)}</b> (simulated ${d.mean_sim.toFixed(3)})<br>Var(X) = <b>${d.var_exact.toFixed(3)}</b></p></div>`;
+    };
+
+    // ---------- Finite state machine ----------
+    async function loadFsm() {
+      const r = await api("/api/fsm");
+      if (!r || !r.ok) return;
+      const d = r.data;
+      $("fcur").textContent = d.state;
+      const manual = Object.entries(d.events).filter(([e]) => !e.startsWith("access_"));
+      $("fbtn").innerHTML = manual.length ? manual.map(([e, n]) => `<button class="go alt" data-fe="${esc(e)}">${esc(e)} → ${esc(n)}</button>`).join("") : "";
+      $("fhist").innerHTML = d.history.map((h) => `<span class="chip">${esc(h)}</span>`).join("") || '<span class="note">No moves yet.</span>';
+      $("ftab").innerHTML = "<tr><th>From</th><th>Event</th><th>To</th></tr>" +
+        d.table.map(([a, e, n]) => `<tr class="${a == d.state ? "now" : ""}"><td>${esc(a)}</td><td>${esc(e)}</td><td>${esc(n)}</td></tr>`).join("");
+    }
+    document.addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-fe]");
+      if (!b) return;
+      const r = await api("/api/fsm/event", { event: b.dataset.fe });
+      if (r && !r.ok) toast(r.data.error);
+      loadFsm();
+    });
+
+    // ---------- when the page opens: already signed in? ----------
+    api("/api/session").then((r) => { if (r && r.data.role) enter(r.data.role, r.data.me); });
+
+</script>
+</body></html>
