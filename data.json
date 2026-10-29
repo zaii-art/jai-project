@@ -1,0 +1,79 @@
+{
+  "users": {
+    "Nathaniel": {
+      "t": "Student",
+      "id": 2024101,
+      "a": 0,
+      "r": 0
+    },
+    "Ck": {
+      "t": "Student",
+      "id": 2024102,
+      "a": 1,
+      "r": 0
+    },
+    "Luke": {
+      "t": "Student",
+      "id": 2024103,
+      "a": 0,
+      "r": 1
+    },
+    "Sir. Tabaghak": {
+      "t": "Faculty",
+      "id": 1001,
+      "a": 1,
+      "r": 0
+    },
+    "Sir. Ramil": {
+      "t": "Faculty",
+      "id": 1002,
+      "a": 0,
+      "r": 0
+    },
+    "Mayet": {
+      "t": "Staff",
+      "id": 3001,
+      "a": 1,
+      "r": 0
+    },
+    "Simpor": {
+      "t": "Staff",
+      "id": 3002,
+      "a": 0,
+      "r": 0
+    },
+    "Visitor1": {
+      "t": "Visitor",
+      "id": 9001,
+      "a": 0,
+      "r": 0
+    },
+    "Visitor2": {
+      "t": "Visitor",
+      "id": 9002,
+      "a": 0,
+      "r": 0
+    }
+  },
+  "rel": [
+    "Student|Library",
+    "Student|ComLab",
+    "Student|ComLec",
+    "Faculty|Library",
+    "Faculty|ComLab",
+    "Faculty|Faculty Room",
+    "Faculty|Office",
+    "Faculty|ComLec",
+    "Staff|Library",
+    "Staff|Office"
+  ],
+  "even": false,
+  "log": [
+    {
+      "n": "Luke",
+      "f": "Library",
+      "ok": false,
+      "t": "09:32:03 AM"
+    }
+  ]
+}
